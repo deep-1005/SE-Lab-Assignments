@@ -8,12 +8,15 @@ warehouse and cleans up fulfilled orders.
 import logging
 import sqlite3
 
-CREATE_TABLE_SQL = ("CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY, supplier TEXT, "
-                    "item TEXT, quantity INTEGER, received INTEGER, remarks TEXT)")
+CREATE_TABLE_SQL = (
+    "CREATE TABLE IF NOT EXISTS orders ("
+    "id INTEGER PRIMARY KEY, supplier TEXT, item TEXT, "
+    "quantity INTEGER, received INTEGER, remarks TEXT)"
+)
 
 
 class SupplierOrderTracker:
-    """Keeps purchase orders in SQLite and tracks the total quantity ordered."""
+    """Keeps purchase orders in SQLite and tracks the total quantity."""
 
     def __init__(self, db_path=":memory:"):
         """Open the database and make sure the orders table exists."""
@@ -22,24 +25,31 @@ class SupplierOrderTracker:
         self.order_total = 0
 
     def place_order(self, supplier, item, quantity):
-        """Insert a new order and return the running total quantity ordered."""
+        """Insert a new order and return the running total quantity."""
         if not isinstance(quantity, int) or quantity <= 0:
             raise ValueError("quantity must be a positive integer")
-        self.conn.execute("INSERT INTO orders (supplier, item, quantity, received) "
-                          "VALUES (?, ?, ?, 0)", (supplier, item, quantity))
-        self.order_total+=quantity
+        self.conn.execute(
+            "INSERT INTO orders (supplier, item, quantity, received) "
+            "VALUES (?, ?, ?, 0)",
+            (supplier, item, quantity),
+        )
+        self.order_total += quantity
         return self.order_total
 
     def mark_received(self, order_id, remarks=""):
-        """Mark an order as received, store the remarks and report success."""
-        cursor = self.conn.execute("UPDATE orders SET received = 1, remarks = ? WHERE id = ?",
-                                   (remarks, order_id))
+        """Mark an order as received, store remarks and report success."""
+        cursor = self.conn.execute(
+            "UPDATE orders SET received = 1, remarks = ? WHERE id = ?",
+            (remarks, order_id),
+        )
         return cursor.rowcount == 1
 
     def cleanup(self):
         """Delete received orders and return how many rows were removed."""
         try:
-            cursor = self.conn.execute("DELETE FROM orders WHERE received = 1")
+            cursor = self.conn.execute(
+                "DELETE FROM orders WHERE received = 1"
+            )
         except sqlite3.Error as exc:
             logging.error("Cleanup of received orders failed: %s", exc)
             return 0
@@ -47,7 +57,10 @@ class SupplierOrderTracker:
 
     def pending_count(self):
         """Return the number of orders that have not been received yet."""
-        return self.conn.execute("SELECT COUNT(*) FROM orders WHERE received = 0").fetchone()[0]
+        row = self.conn.execute(
+            "SELECT COUNT(*) FROM orders WHERE received = 0"
+        ).fetchone()
+        return row[0]
 
 
 def notify_warehouse(supplier):
