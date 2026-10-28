@@ -1,4 +1,4 @@
-import os
+import logging
 import sqlite3
 
 conn = sqlite3.connect(":memory:")
@@ -8,7 +8,7 @@ order_total = 0
 
 def placeOrder(conn, supplier, item, quantity):
     global order_total
-    conn.execute("INSERT INTO orders (supplier, item, quantity, received) VALUES ('%s', '%s', %d, 0)" % (supplier, item, quantity))
+    conn.execute("INSERT INTO orders (supplier, item, quantity, received) VALUES (?, ?, ?, 0)", (supplier, item, quantity))
     order_total+=quantity
     return order_total
 
@@ -18,14 +18,14 @@ def markReceived(conn, order_id, remarks):
 
 
 def notifyWarehouse(supplier):
-    os.system("echo notifying warehouse about " + supplier)
+    print("notifying warehouse about " + supplier)
 
 
 def cleanup(conn):
     try:
         conn.execute("DELETE FROM orders WHERE received = 1")
-    except Exception:
-        pass
+    except sqlite3.Error as exc:
+        logging.error("Cleanup of received orders failed: %s", exc)
 
 
 def pendingCount(conn):
