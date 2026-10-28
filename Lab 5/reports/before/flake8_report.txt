@@ -1,0 +1,4 @@
+[1msupplier_orders.py[m[36m:[m5[36m:[m80[36m:[m [1m[31mE501[m line too long (122 > 79 characters)
+[1msupplier_orders.py[m[36m:[m11[36m:[m80[36m:[m [1m[31mE501[m line too long (131 > 79 characters)
+[1msupplier_orders.py[m[36m:[m12[36m:[m16[36m:[m [1m[31mE225[m missing whitespace around operator
+[1msupplier_orders.py[m[36m:[m32[36m:[m80[36m:[m [1m[31mE501[m line too long (87 > 79 characters)
